@@ -60,6 +60,9 @@ if ( ! class_exists( 'WC_Frenet_Main' ) ) :
         private function __construct() {
             add_action( 'init', array( $this, 'load_plugin_textdomain' ), -1 );
 
+            // Remove "Shipping costs updated" notice from cart
+            add_filter( 'woocommerce_add_notice', array( $this, 'remove_shipping_updated_notice' ), 0, 2 );
+
             add_action( 'wp_ajax_ajax_simulator', array( 'WC_Frenet_Shipping_Simulator', 'ajax_simulator' ) );
             add_action( 'wp_ajax_nopriv_ajax_simulator', array( 'WC_Frenet_Shipping_Simulator', 'ajax_simulator' ) );
 
@@ -99,6 +102,20 @@ if ( ! class_exists( 'WC_Frenet_Main' ) ) :
          */
         public function load_plugin_textdomain() {
             load_plugin_textdomain( 'woo-shipping-gateway', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
+        }
+
+        /**
+         * Remove the "Shipping costs updated" notice from WooCommerce.
+         *
+         * @param string $message The notice message.
+         * @param string $notice_type The notice type (notice, error, success).
+         * @return string Empty string to remove the notice, or the original message.
+         */
+        public function remove_shipping_updated_notice( $message, $notice_type ) {
+            if ( 'notice' === $notice_type && false !== strpos( $message, 'Shipping costs updated' ) ) {
+                return '';
+            }
+            return $message;
         }
 
         /**
